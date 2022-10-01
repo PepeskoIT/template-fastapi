@@ -1,0 +1,33 @@
+version: '3.7'
+
+x-logging: &default-logging
+ logging:
+   options:
+     max-size: "100m"
+     max-file: "3"
+   driver: local
+
+x-restart: &default-restart
+ restart: always
+
+services:
+  msync-backend:
+    build:
+      dockerfile: docker/Dockerfile
+      context: ./..
+      args:
+        - APP_PATH=/usr/local/src
+    environment:
+      - WSGI_WORKERS_COUNT=2
+      - WSGI_LOG_LEVEL=debug
+      - WSGI_PORT=$CONTAINER_BACKEND_PORT
+      - APP_LOGGER_NAME=backend
+    ports:
+      - $HOST_BACKEND_PORT:$CONTAINER_BACKEND_PORT
+    user: root
+    <<: *default-logging 
+    <<: *default-restart
+
+networks:
+  default:
+    driver: bridge
